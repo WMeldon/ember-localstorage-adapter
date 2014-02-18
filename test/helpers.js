@@ -87,3 +87,13 @@ DS.JSONSerializer.reopen({
   }
 });
 
+QUnit.testSkip = function() {
+   QUnit.test(arguments[0] + ' (SKIPPED)', function() {
+       QUnit.expect(0);//dont expect any tests
+       var li = document.getElementById(QUnit.config.current.id);
+       QUnit.done(function() {
+           li.style.background = '#FFFF99';
+       });
+   });
+};
+testSkip = QUnit.testSkip;
