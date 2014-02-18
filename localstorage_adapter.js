@@ -120,7 +120,8 @@
       }
 
       return new Ember.RSVP.Promise(function(resolve, reject) {
-        var record = Ember.A(namespace.records[id]);
+        namespace.then(function(value){
+        var record = Ember.A(value.records[id]);
 
         if (allowRecursive && record) {
           adapter.loadRelationships(type, record).then(function(finalRecord) {
@@ -133,6 +134,7 @@
             resolve(record);
           }
         }
+        });
       });
 
       resolve(record);
@@ -143,19 +145,21 @@
       var namespace = this._namespaceForType(type);
 
       return new Ember.RSVP.Promise(function(resolve, reject) {
+        namespace.then(function(value){
         var results = [];
 
         for (var i = 0; i < ids.length; i++) {
-          results.push(Ember.copy(namespace.records[ids[i]]));
+          results.push(Ember.copy(value.records[ids[i]]));
         }
 
         resolve(results);
-      }).then(function(records) {
-        if (records.get('length')) {
-          return adapter.loadRelationshipsForMany(type, records);
-        } else {
-          return records;
-        }
+        }).then(function(records) {
+          if (records.get('length')) {
+            return adapter.loadRelationshipsForMany(type, records);
+          } else {
+            return records;
+          }
+        });
       });
     },
 
@@ -175,13 +179,17 @@
     //    { complete: true, name: /foo|bar/ }
     findQuery: function (store, type, query, recordArray) {
       var namespace = this._namespaceForType(type),
-          results = this.query(namespace.records, query);
+          adapter = this;
+          // debugger;
+      return namespace.then(function(value) {
+        var results = adapter.query(value.records, query);
 
-      if (results.get('length')) {
-        results = this.loadRelationshipsForMany(type, results);
-      }
+        if (results.get('length')) {
+          results = adapter.loadRelationshipsForMany(type, results);
+        }
 
-      return Ember.RSVP.resolve(results);
+        return Ember.RSVP.resolve(results);
+      });
     },
 
     query: function (records, query) {
@@ -208,41 +216,54 @@
     findAll: function (store, type) {
       var namespace = this._namespaceForType(type),
           results = [];
-
-      for (var id in namespace.records) {
-        results.push(Ember.copy(namespace.records[id]));
-      }
-      return Ember.RSVP.resolve(results);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        namespace.then(function(value){
+          for (var id in value.records) {
+            results.push(Ember.copy(value.records[id]));
+          }
+          return resolve(results);
+        });
+      });
     },
 
     createRecord: function (store, type, record) {
-      var namespaceRecords = this._namespaceForType(type),
-          recordHash = record.serialize({includeId: true});
+      var namespace = this._namespaceForType(type),
+          adapter = this;
 
-      namespaceRecords.records[recordHash.id] = recordHash;
+      return namespace.then(function(value) {
+        var recordHash = record.serialize({includeId: true});
 
-      this.persistData(type, namespaceRecords);
-      return Ember.RSVP.resolve();
+        value.records[recordHash.id] = recordHash;
+
+        adapter.persistData(type, value).then(function(value){
+          return Ember.RSVP.resolve();
+        });
+      });
     },
 
     updateRecord: function (store, type, record) {
-      var namespaceRecords = this._namespaceForType(type),
-          id = record.get('id');
+      var namespace = this._namespaceForType(type),
+          id = record.get('id'),
+          adapter = this;
 
-      namespaceRecords.records[id] = record.serialize({ includeId: true });
-
-      this.persistData(type, namespaceRecords);
-      return Ember.RSVP.resolve();
+      return namespace.then(function(value) {
+        value.records[id] = record.serialize({ includeId: true });
+        adapter.persistData(type, value).then(function(value){;
+          return Ember.RSVP.resolve();
+        });
+      });
     },
 
     deleteRecord: function (store, type, record) {
       var namespaceRecords = this._namespaceForType(type),
-          id = record.get('id');
+          id = record.get('id'),
+          adapter = this;
 
-      delete namespaceRecords.records[id];
-
-      this.persistData(type, namespaceRecords);
-      return Ember.RSVP.resolve();
+      return namespaceRecords.then(function(value){
+        delete value.records[id];
+        adapter.persistData(type, namespaceRecords);
+        return Ember.RSVP.resolve();
+      });
     },
 
     generateIdForRecord: function () {
@@ -256,24 +277,34 @@
     },
 
     loadData: function () {
-      var storage = localStorage.getItem(this.adapterNamespace());
-      return storage ? JSON.parse(storage) : {};
+      var storage = this._adapter().getItem(this.adapterNamespace());
+      return storage ? storage : {};
     },
 
     persistData: function(type, data) {
       var modelNamespace = this.modelNamespace(type),
-          localStorageData = this.loadData();
+          localStorageData = this.loadData(),
+          adapter = this;
 
-      localStorageData[modelNamespace] = data;
-
-      localStorage.setItem(this.adapterNamespace(), JSON.stringify(localStorageData));
+      return localStorageData.then(function(value) {
+        value[modelNamespace] = data;
+        return adapter._adapter().setItem(adapter.adapterNamespace(), value);
+      });
     },
 
     _namespaceForType: function (type) {
       var namespace = this.modelNamespace(type),
-          storage   = localStorage.getItem(this.adapterNamespace());
+          storage   = this._adapter().getItem(this.adapterNamespace());
 
-      return storage ? JSON.parse(storage)[namespace] || {records: {}} : {records: {}};
+      return storage.then(function(value){
+        return value ? value[namespace] || {records: {}} : {records: {}};
+      });
+      // return thing;
+    },
+
+    _adapter: function() {
+      // return localStorage;
+      return localforage;
     },
 
     modelNamespace: function(type) {
