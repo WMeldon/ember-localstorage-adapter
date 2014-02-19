@@ -123,21 +123,19 @@
         namespace.then(function(value){
         var record = Ember.A(value.records[id]);
 
-        if (allowRecursive && record) {
+        if (allowRecursive && !Ember.isEmpty(record)) {
           adapter.loadRelationships(type, record).then(function(finalRecord) {
-            resolve(finalRecord);
+            Ember.run(null, resolve, finalRecord);
           });
         } else {
-          if (!record) {
-            reject();
+          if (Ember.isEmpty(record)) {
+            Ember.run(null, reject);
           } else {
-            resolve(record);
+            Ember.run(null, resolve, record);
           }
         }
         });
       });
-
-      resolve(record);
     },
 
     findMany: function (store, type, ids) {
@@ -152,7 +150,7 @@
           results.push(Ember.copy(value.records[ids[i]]));
         }
 
-        resolve(results);
+        Ember.run(null, resolve, results);
         }).then(function(records) {
           if (records.get('length')) {
             return adapter.loadRelationshipsForMany(type, records);
@@ -180,15 +178,18 @@
     findQuery: function (store, type, query, recordArray) {
       var namespace = this._namespaceForType(type),
           adapter = this;
-          // debugger;
-      return namespace.then(function(value) {
-        var results = adapter.query(value.records, query);
 
-        if (results.get('length')) {
-          results = adapter.loadRelationshipsForMany(type, results);
-        }
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        namespace.then(function(value) {
+          var results = adapter.query(value.records, query);
 
-        return Ember.RSVP.resolve(results);
+          if (results.get('length')) {
+            results = adapter.loadRelationshipsForMany(type, results);
+          }
+
+
+          Ember.run(null, resolve, results);
+        });
       });
     },
 
@@ -216,12 +217,13 @@
     findAll: function (store, type) {
       var namespace = this._namespaceForType(type),
           results = [];
+
       return new Ember.RSVP.Promise(function(resolve, reject) {
         namespace.then(function(value){
           for (var id in value.records) {
             results.push(Ember.copy(value.records[id]));
           }
-          return resolve(results);
+          Ember.run(null, resolve, results);
         });
       });
     },
@@ -230,13 +232,16 @@
       var namespace = this._namespaceForType(type),
           adapter = this;
 
-      return namespace.then(function(value) {
-        var recordHash = record.serialize({includeId: true});
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        namespace.then(function(value) {
+          var recordHash = record.serialize({includeId: true});
 
-        value.records[recordHash.id] = recordHash;
+          value.records[recordHash.id] = recordHash;
 
-        adapter.persistData(type, value).then(function(value){
-          return Ember.RSVP.resolve();
+          adapter.persistData(type, value).then(function(record){
+            console.log(record);
+            Ember.run(null, resolve);
+          });
         });
       });
     },
@@ -246,10 +251,13 @@
           id = record.get('id'),
           adapter = this;
 
-      return namespace.then(function(value) {
-        value.records[id] = record.serialize({ includeId: true });
-        adapter.persistData(type, value).then(function(value){;
-          return Ember.RSVP.resolve();
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        namespace.then(function(value) {
+          value.records[id] = record.serialize({ includeId: true });
+
+          adapter.persistData(type, value).then(function(value){
+            Ember.run(null, resolve);
+          });
         });
       });
     },
@@ -259,10 +267,13 @@
           id = record.get('id'),
           adapter = this;
 
-      return namespaceRecords.then(function(value){
-        delete value.records[id];
-        adapter.persistData(type, namespaceRecords);
-        return Ember.RSVP.resolve();
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        namespaceRecords.then(function(value){
+          delete value.records[id];
+          adapter.persistData(type, value).then(function(value){
+            Ember.run(null, resolve);
+          });
+        });
       });
     },
 
