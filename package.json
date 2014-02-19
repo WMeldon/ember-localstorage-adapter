@@ -1,0 +1,43 @@
+{
+  "name": "ember-localforage-adapter",
+  "version": "0.0.0",
+  "description": "Ember Data adapter for Mozilla's LocalForage library",
+  "main": "gulpfile.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "ember-data": ">= 1.0.0-beta.6",
+    "ember": ">= 1.0.0",
+    "localforage": "*"
+  },
+  "devDependencies": {
+    "gulp": "~3.5.2",
+    "gulp-coffee": "~1.4.1",
+    "gulp-qunit": "~0.2.0",
+    "gulp-uglify": "~0.2.1",
+    "gulp-util": "~2.2.14",
+    "coffee-script": "~1.7.1"
+  },
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/WMeldon/ember-localstorage-adapter.git"
+  },
+  "keywords": [
+    "ember",
+    "local-storage",
+    "indexeddb",
+    "websql",
+    "ember-data",
+    "adapter"
+  ],
+  "author": "William Meldon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/WMeldon/ember-localstorage-adapter/issues"
+  },
+  "homepage": "https://github.com/WMeldon/ember-localstorage-adapter"
+}
