@@ -1,12 +1,12 @@
 {
-  "name": "ember-localstorage-adapter",
-  "version": "0.2.0",
-  "homepage": "https://github.com/rpflorence/ember-localstorage-adapter",
+  "name": "ember-localforage-adapter",
+  "version": "0.0.0",
+  "homepage": "https://github.com/WMeldon/ember-localstorage-adapter/tree/forage-engine",
   "authors": [
-    "Ryan Florence <rpflorence@gmail.com>"
+    "William Meldon <wdmeldon@gmail.com>"
   ],
-  "description": "Store your ember application data in localStorage.",
-  "main": "localstorage_adapter.js",
+  "description": "Store your ember application data in localForage.",
+  "main": "dist/localforage_adapter.js",
   "keywords": [
     "localstorage",
     "ember",

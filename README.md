@@ -1,18 +1,28 @@
-Ember Data Local Storage Adapter
+Ember Data Local Forage Adapter [![Build Status](https://travis-ci.org/WMeldon/ember-localstorage-adapter.png?branch=forage-engine)](https://travis-ci.org/WMeldon/ember-localstorage-adapter)
 ================================
 
-Store your ember application data in localStorage.
+Store your ember application data in ~~localStorage~~ whatever offline storage is available.
+
+This is a twisted amalgamation of Ryan Florence's [Ember Data Local Storage Adapter](https://github.com/rpflorence/ember-localstorage-adapter) and Mozilla's [localForage](https://github.com/mozilla/localForage).
 
 Compatible with Ember Data 1.0.beta.6.
 
-**NOTE**: New versions of the `localStorage` adapter are no longer compatible
-with older versions of Ember Data. For older versions, checkout the `pre-beta`
-branch.
+# This is a very rough experiment
+
+I was curious to try out localForage and wanted to see if I could get a working Ember Data adapter through it.  I forked Ryan Florence's localStorage adapter and then did the bare minimum to get the tests passing.
+
+The biggest change that needed to be made was converting all of the synchronous localStorage interactions to work with the asynchronous API provided by localForage.  It's not 100% yet but I'll continue to tinker to get things running.
+
+## Why localForage
+
+LocalForage leverages newer, asynchronous offline browser solutions whenever it can with a consistent API.  That API happens to be identical to the existing localStorage API, but it provides async interaction.
+
+It's a little more future proof and a lot more Ember-like.
 
 Usage
 -----
 
-Include `localstorage_adapter.js` in your app and then like all adapters:
+Include `localforage_adapter.js` in your app and then like all adapters:
 
 ```js
 App.ApplicationSerializer = DS.LSSerializer.extend();
@@ -23,7 +33,7 @@ App.ApplicationAdapter = DS.LSAdapter.extend({
 
 ### Local Storage Namespace
 
-All of your application data lives on a single `localStorage` key, it defaults to `DS.LSAdapter` but if you supply a `namespace` option it will store it there:
+All of your application data lives on a single key, it defaults to `DS.LSAdapter` but if you supply a `namespace` option it will store it there:
 
 ```js
 DS.LSAdapter.create({
@@ -50,6 +60,7 @@ List.reopen({
 ```
 
 ### Quota Exceeded Handler
+## This shouldn't really be an issue any more.
 
 Browser's `localStorage` has limited space, if you try to commit application data and the browser is out of space, then the adapter will trigger the `QUOTA_EXCEEDED_ERR` event.
 
@@ -64,23 +75,30 @@ App.store.commit();
 Todo
 ----
 
-- Make the repo nicer to work with long-term (do something more intelligent with dependencies found in `vendor`, etc.)
+- Fix that bulk save error (seems to be a false assumtion in the testing logic?)
+- Continue to improve the dev environement.
+- Misc Cleanups (especially the automatic coffeescript conversion)
 
-Tests
+Developing
 -----
 
-If you don't have bower, install it with
+Install the dependencies
 
-    npm install bower -g
+    npm install
 
-Then install the dependencies with
+I'm primarily using [Gulp](https://github.com/gulpjs/gulp) and [Testem](https://github.com/airportyh/testem).
 
-    ```bower install```
+Build from src:
 
-Open `tests/index.html` in a browser. If you have `phantomjs` installed,
-run
+    gulp scripts
+    # or do it automatically
+    gulp watch
 
-    phantomjs test/runner.js test/index.html
+Run the tests
+
+    gulp test
+    # or automaticaly
+    testem
 
 License & Copyright
 -------------------
