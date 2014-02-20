@@ -194,7 +194,6 @@ test('updateRecords', function() {
 
   var UpdateList = function(list) {
     return store.find('list').then(function(records) {
-      console.log(records);
       var record = records.objectAt(0);
       record.set('name', 'Macgyver');
       return record.save();
