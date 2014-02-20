@@ -6,8 +6,7 @@
     serializeHasMany: (record, json, relationship) ->
       key = relationship.key
       relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship)
-      json[key] = record.get(key).mapBy("id")  if relationshipType is "manyToNone" or relationshipType is "manyToMany" or relationshipType is "manyToOne"
-      return
+      json[key] = record.get(key).mapBy("id")  if relationshipType in ["manyToNone", "manyToMany", "manyToOne"]
 
 
     # TODO support for polymorphic manyToNone and manyToMany relationships
@@ -107,16 +106,12 @@
           if allowRecursive and not Ember.isEmpty(record)
             adapter.loadRelationships(type, record).then (finalRecord) ->
               Ember.run null, resolve, finalRecord
-              return
 
           else
             if Ember.isEmpty(record)
               Ember.run null, reject
             else
               Ember.run null, resolve, record
-          return
-
-        return
       )
 
     findMany: (store, type, ids) ->
@@ -131,14 +126,11 @@
             results.push Ember.copy(value.records[ids[i]])
             i++
           Ember.run null, resolve, results
-          return
         ).then (records) ->
           if records.get("length")
             adapter.loadRelationshipsForMany type, records
           else
             records
-
-        return
       )
 
 
@@ -164,9 +156,6 @@
           results = adapter.query(value.records, query)
           results = adapter.loadRelationshipsForMany(type, results)  if results.get("length")
           Ember.run null, resolve, results
-          return
-
-        return
       )
 
     query: (records, query) ->
@@ -196,9 +185,6 @@
           for id of value.records
             results.push Ember.copy(value.records[id])
           Ember.run null, resolve, results
-          return
-
-        return
       )
 
     createRecord: (store, type, record) ->
@@ -209,13 +195,7 @@
           recordHash = record.serialize(includeId: true)
           value.records[recordHash.id] = recordHash
           adapter.persistData(type, value).then (record) ->
-            console.log record
             Ember.run null, resolve
-            return
-
-          return
-
-        return
       )
 
     updateRecord: (store, type, record) ->
@@ -227,11 +207,6 @@
           value.records[id] = record.serialize(includeId: true)
           adapter.persistData(type, value).then (value) ->
             Ember.run null, resolve
-            return
-
-          return
-
-        return
       )
 
     deleteRecord: (store, type, record) ->
@@ -244,11 +219,6 @@
 
           adapter.persistData(type, value).then (value) ->
             Ember.run null, resolve
-            return
-
-          return
-
-        return
       )
 
     generateIdForRecord: ->
@@ -378,18 +348,11 @@
               promise.then (relationRecord) ->
                 finalPayload = adapter.addEmbeddedPayload(record, relationName, relationRecord)
                 resolve finalPayload
-                return
-
-              return
             )
             relationshipPromises.push embedPromise
-          return
 
         Ember.RSVP.all(relationshipPromises).then ->
           resolve record
-          return
-
-        return
       )
 
 
@@ -485,16 +448,12 @@
               loadNextRecord recordsToBeLoaded[0]
             else
               resolve recordsWithRelationships
-            return
-
-          return
 
 
         ###
         We start by the first record
         ###
         loadNextRecord recordsToBeLoaded[0]
-        return
       )
 
 
