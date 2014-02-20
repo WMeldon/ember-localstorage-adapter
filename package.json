@@ -6,11 +6,6 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-    "ember-data": ">= 1.0.0-beta.6",
-    "ember": ">= 1.0.0",
-    "localforage": "*"
-  },
   "devDependencies": {
     "gulp": "~3.5.2",
     "gulp-coffee": "~1.4.1",
