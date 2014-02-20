@@ -1,6 +1,7 @@
 {
   "src_files": [
-    "build/*.js"
+    "build/*.js",
+    "test/*.js"
   ],
   "test_page": "test/index.html"
 }
